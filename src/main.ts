@@ -1,8 +1,10 @@
 import { File } from './utils/file';
-import { Interpreter } from './core/interpreter';
 import * as path from 'path';
 import { existsSync, readFileSync } from 'fs';
-import '../std/std.ts';
+import { Parser } from './core/parser/parser';
+import { Worker } from './core/parser/worker';
+import { Compiler } from './core/compiler';
+import { minify } from 'terser';
 
 export function arrayToObject(array: string[][]): Record<string, string> {
   const result: Record<string, string> = {};
@@ -34,13 +36,16 @@ export function getQuarkFolder(): string {
 
 async function main(): Promise<void> {
   // Getting sample code content and interpreting it
-  const root: string = await getQuarkFolder();
-  const src = path.join(root, 'cli', 'main.qrk');
-  try {
-    const script: string = await File.read(src);
-    await Interpreter.run(script, src);
-  } catch(exception) {
-    throw exception;
-  }
+  const src = path.join('sample', 'factorial.qrk');
+  const script = await File.read(src);
+  const ast = Parser.parse(script, src);
+
+  const reworked = Worker.process(ast[0]);
+  const js = Compiler.compile(reworked);
+  console.log(js)
+  const { code } = await minify({
+    'src': js,
+  });
+  eval(code);
 }
 main();
