@@ -1,5 +1,5 @@
 import type { Block, Element } from '../typings/block';
-import { Parser } from './parser';
+import { Parser } from './parser/parser';
 import { existsSync, statSync } from 'fs';
 import { readdir } from 'fs/promises';
 import * as path from 'path';
